@@ -1,9 +1,23 @@
 document.addEventListener('DOMContentLoaded', () => {
-    const boardDisplay = document.querySelector('.board')
-    let row = 0
-    let col = 0
+    const boardDisplay = document.querySelector('.board');
+    const solveButton = document.querySelector('.solve').addEventListener("click", solveStep);
+    const stillSolvingSquares = document.querySelector('.stillSolving');
+
+    /* Other Boards
 
     const board = [
+        [4,9,6,0,0,0,8,0,2],
+        [2,0,8,0,0,0,0,4,5],
+        [0,5,3,2,4,8,0,9,6],
+        [5,3,1,6,2,7,9,8,4],
+        [8,0,0,0,0,4,6,0,0],
+        [6,4,9,8,1,3,2,5,7],
+        [0,8,5,7,0,0,4,2,9],
+        [0,0,4,0,8,0,5,6,0],
+        [9,6,0,4,0,0,0,0,8]
+    ]
+
+        const board = [
         [7,8,0,4,0,0,1,2,0],
         [6,0,0,0,7,5,0,0,9],
         [0,0,0,6,0,1,0,7,8],
@@ -14,10 +28,51 @@ document.addEventListener('DOMContentLoaded', () => {
         [1,2,0,0,0,7,4,0,0],
         [0,4,9,2,0,6,0,0,7]
     ]
+
+        const board = [
+        [5,0,0,0,0,0,0,1,3],
+        [0,0,0,9,1,0,6,8,0],
+        [1,0,0,0,0,0,0,0,0],
+        [0,0,2,8,7,0,3,4,0],
+        [0,0,0,0,0,0,0,7,0],
+        [0,0,0,0,0,6,0,0,1],
+        [0,5,8,1,3,0,4,0,0],
+        [0,4,3,0,9,0,1,6,2],
+        [0,0,1,0,0,4,0,3,0]
+    ]
+
+    */
+
+    const board = [
+        [5,0,0,0,0,0,0,1,3],
+        [0,0,0,9,1,0,6,8,0],
+        [1,0,0,0,0,0,0,0,0],
+        [0,0,2,8,7,0,3,4,0],
+        [0,0,0,0,0,0,7,0,0],
+        [0,0,0,0,0,6,0,0,1],
+        [0,5,8,1,3,0,4,0,0],
+        [0,4,3,0,9,0,1,6,2],
+        [0,0,1,0,0,4,0,3,0]
+    ]
+
+    let possibilities = [
+        [[],[],[],[],[],[],[],[],[]],
+        [[],[],[],[],[],[],[],[],[]],
+        [[],[],[],[],[],[],[],[],[]],
+        [[],[],[],[],[],[],[],[],[]],
+        [[],[],[],[],[],[],[],[],[]],
+        [[],[],[],[],[],[],[],[],[]],
+        [[],[],[],[],[],[],[],[],[]],
+        [[],[],[],[],[],[],[],[],[]],
+        [[],[],[],[],[],[],[],[],[]],
+    ]
+
+    let possibleNumbers = [1,2,3,4,5,6,7,8,9];
     
     function createBoard(bo) {
-        for (i=0; i < bo.length; i++) {
-            if (i % 3 === 0 && i != 0) {
+        boardDisplay.innerHTML = '';
+        for (p=0; p < bo.length; p++) {
+            if (p % 3 === 0 && p != 0) {
                 for (x=0; x < 11; x++) {
                     square = document.createElement('div')
                     square.innerHTML = '-'
@@ -25,223 +80,83 @@ document.addEventListener('DOMContentLoaded', () => {
                 }
                 
             }
-            for (j=0; j < bo[0].length; j++) {
-                if (j % 3 === 0 && j != 0) {
+            for (q=0; q < bo[0].length; q++) {
+                if (q % 3 === 0 && q != 0) {
                     square = document.createElement('div')
                     square.innerHTML = '|'
                     boardDisplay.appendChild(square) 
                 }
                 
                 square = document.createElement('div')
-                square.innerHTML = bo[i][j]
+                square.innerHTML = bo[p][q]
                 boardDisplay.appendChild(square)
             }
         }
     }
 
-    createBoard(board);
-
-    function solve(bo) {
-        if (solved(bo)) {
-            return bo
-        } else {
-            const possibilities = nextBoards(bo)
-            const validBoards = keepOnlyValid(possibilities)
-            return searchForSolution(validBoards)
-        }
+    function solveStep() {
+        findPossibilities(board);
     }
 
-    function searchForSolution(bo) {
-        if (board.length < 1) {
-            return false
-        } else {
-            var first = board.shift()
-            const tryPath = solve(first)
-            if (tryPath != false) {
-                return tryPath
-            } else {
-                return searchForSolution(boards)
+    const findRemovablePossibilities = (bo, r, c) => {
+
+        for (k=0; k < 9; k++) {
+             // check Row
+            if (possibleNumbers.findIndex((e) => e === bo[r][k]) > -1) {
+                possibleNumbers.splice(possibleNumbers.findIndex((e) => e === bo[r][k]), 1);
             }
-        }
-    }
-
-    function solved(bo) {
-        for (let i = 0; i < 9; i++) {
-            for (let j = 0; j < 9; j++) {
-                console.log(bo);
-                if (bo[i][j] === 0) {
-                    return false
-                }
-            }
-        }
-        return true
-    }
-
-    function nextBoards(bo) {
-        let res = []
-        const firstEmpty = findEmptySquare(bo) // (y,x)
-        if (firstEmpty != undefined) {
-            const y = firstEmpty[0]
-            const x = firstEmpty[1]
-            for (let i = 1; i <= 9; i++) {
-                let newBoard = [...board]
-                var row = [...newBoard[y]]
-                row[x] = i
-                newBoard[y] = row
-                res.push(newBoard)
-            }
-        }
-        return res
-    }
-
-    function findEmptySquare(bo) {
-        for (let i = 0; i < 9; i++) {
-            for (let j = 0; j < 9; j++) {
-                if (bo[i][j] === 0) {
-                    return [i, j]
-                }
-            }
-        }
-    }
-
-    function keepOnlyValid(bo) {
-        return board.filter((b) => validBoards(b))
-    }
-
-    function validBoards(bo) {
-        return rowGood(bo) && columnGood(bo) && boxGood(bo)
-    }
-
-    function rowGood(bo) {
-        for (let i = 0; i < 9; i++) {
-            let cur = []
-            for (let j = 0; j < 9; j++) {
-                if (cur.includes(bo[i][j])) {
-                    return false
-                } else if (bo[i][j] != null) {
-                    cur.push(bo[i][j])
-                }
-            }
-        }
-        return true
-    }
-
-    function columnGood(bo) {
-        for (let i = 0; i < 9; i++) {
-            let cur = []
-            for (let j = 0; j < 9; j++) {
-                if (cur.includes(bo[j][i])) {
-                    return false
-                } else if (bo[j][i] != null) {
-                    cur.push(bo[j][i])
-                }
-            }
-        }
-        return true
-    }
-
-    function boxGood(bo) {
-            // transform this everywhere to update res
-        const boxCoordinates =  [[0, 0], [0, 1], [0, 2],
-                                [1, 0], [1, 1], [1, 2],
-                                [2, 0], [2, 1], [2, 2]]
-        // THIS FUNCTION WORKS.
-        // Board -> Boolean
-        // makes sure there are no repeating numbers for each box
-        for (var y = 0; y < 9; y += 3) {
-            for (var x = 0; x < 9; x += 3) {
-                // each traversal should examine each box
-                var cur = []
-                for (var i = 0; i < 9; i++) {
-                    var coordinates = [...boxCoordinates[i]]
-                    coordinates[0] += y
-                    coordinates[1] += x
-                    if (cur.includes(board[coordinates[0]][coordinates[1]])) {
-                        return false
-                        } else if (board[coordinates[0]][coordinates[1]] != null) {
-                            cur.push(board[coordinates[0]][coordinates[1]])
-                        }
-                    }
-                }
-            }
-        return true
-        
-    }
-
-    console.log(solve(board));
-
-    /*function solve(bo) {
-        let find = findEmptySquare(bo)
-
-        if (!find) {
-            createBoard(board)
-            return true // solved
-        } else {
-            console.log(row, col)
-            //row, col = find;
-        }
-
-        for (n = 1; n < 10; n++) {
-
-            if (valid(bo, n, row, col)) {
-                console.log(n)
-                bo[row][col] = n;
-                if (solve(bo)) {
-                    return true;
-                }
-            } else {
-                bo[row][col] = 0;
-            }
-        }
-        return false;
-    }
-
-    function findEmptySquare(bo) {
-        for (i=0; i < bo.length; i++) {
-            for (j=0; j < bo[0].length; j++) {
-                if (bo[i][j] === 0) {
-                    row = Number(i)
-                    col = Number(j)
-                    return true
-                }
-            }
-        }
-        return false
-    }
-
-    function valid(bo, num, r, c) {
-
-        // check Row
-        for (i=0; i < bo[0].length; i++) {
-            if (bo[r][i] === num && c != i) {
-                return false
-            }
-        }
-
-        // check Column
-        for (i=0; i < bo.length; i++)  {
-            if (bo[i][c] === num && r != i) {
-                return false
+            // check Column
+            if (possibleNumbers.findIndex((e) => e === bo[k][c]) > -1) {
+                possibleNumbers.splice(possibleNumbers.findIndex((e) => e === bo[k][c]), 1);
             }
         }
 
         // check 3x3 square
-        let boxX = c >> 3
-        let boxY = r >> 3
+        const squareLength = 3;
+        const square = [Math.floor(r/squareLength), Math.floor(c/squareLength)];
 
-        for (i = 0; i < boxY*3 + 3; i ++) {
-            for (j = 0; j < boxX*3 + 3; j++) {
-                if (bo[i][j] === num && i != r && j != c) {
-                    return false
+        for (l=0; l < squareLength; l++) {
+            for (m = 0; m < squareLength; m++) {
+                if (possibleNumbers.findIndex((e) => e === bo[(square[0]*3)+l][(square[1]*3)+m]) > -1) {
+                    possibleNumbers.splice(possibleNumbers.findIndex((e) => e === bo[(square[0]*3)+l][(square[1]*3)+m]), 1);
                 }
             }
         }
+        return possibleNumbers;
+    }
 
-        return true
+    const findSinglePossibilities = (possibilities) => {
+        let stillSolving = 0;
+        for (n=0; n < possibilities.length; n++) {
+            for (o = 0; o < possibilities.length; o++) {
+                if(possibilities[n][o].length > 1) {
+                    stillSolving++;
+                }
+                if(possibilities[n][o].length === 1) {
+                    board[n][o] = possibilities[n][o][0];
+                }
+            }
+        }
+        stillSolvingSquares.innerHTML = `You still have ${stillSolving} Steps left`;
+        if (stillSolving === 0 ) {
+            stillSolvingSquares.innerHTML = 'Done!';
+        }
+        stillSolving = 0;
+    }
 
-    }*/
+    function findPossibilities(bo) {
+        for (i=0; i < bo.length; i++) {
+            for (j = 0; j < bo.length; j++) {
+                if(bo[i][j] < 1) { 
+                    possibilities[i][j] = findRemovablePossibilities(bo, i, j);
+                    possibleNumbers = [1,2,3,4,5,6,7,8,9];
+                }
+            }
+        }
+        findSinglePossibilities(possibilities);
+        createBoard(board);
+    }
 
-    //solve(board);
-    
+    createBoard(board);
 })
 
